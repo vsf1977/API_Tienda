@@ -9,7 +9,7 @@ namespace API_Tienda.Models
         SqlCommand comando;
         SqlDataReader cursor;
         Database database = new Database();
-        public int idProducto { get; set; }
+        public string idProducto { get; set; }
         public string nombre { get; set; }
         public string descripcion { get; set; }
         public decimal precio { get; set; }
@@ -26,7 +26,7 @@ namespace API_Tienda.Models
                 while (cursor.Read())
                 {
                     Producto producto = new Producto();
-                    producto.idProducto = cursor.GetInt32(0);
+                    producto.idProducto = cursor.GetString(0);
                     producto.nombre = cursor.GetString(1);
                     producto.descripcion = cursor.GetString(2);
                     producto.precio = cursor.GetDecimal(3);
@@ -81,7 +81,7 @@ namespace API_Tienda.Models
                 while (cursor.Read())
                 {
                     Producto producto = new Producto();
-                    producto.idProducto = cursor.GetInt32(0);
+                    producto.idProducto = cursor.GetString(0);
                     producto.nombre = cursor.GetString(1);
                     producto.descripcion = cursor.GetString(2);
                     producto.precio = cursor.GetDecimal(3);
@@ -97,14 +97,16 @@ namespace API_Tienda.Models
         public void insertar()
         {
             comando = new SqlCommand(null, database.Conectar());
-            comando.CommandText = "insert into producto values (@nombre, @desc, @precio, @descuento, @pais)";
+            comando.CommandText = "insert into producto values (@idProducto, @nombre, @desc, @precio, @descuento, @pais)";
 
+            SqlParameter idProductoParam = new SqlParameter("@idProducto", System.Data.SqlDbType.VarChar, 20);
             SqlParameter nombreParam = new SqlParameter("@nombre", System.Data.SqlDbType.VarChar, 50);
             SqlParameter descParam = new SqlParameter("@desc", System.Data.SqlDbType.VarChar, 100);
             SqlParameter precioParam = new SqlParameter("@precio", System.Data.SqlDbType.Decimal);
             SqlParameter descuentoParam = new SqlParameter("@descuento", System.Data.SqlDbType.TinyInt);
             SqlParameter paisParam = new SqlParameter("@pais", System.Data.SqlDbType.VarChar, 50);
 
+            idProductoParam.Value = idProducto;
             nombreParam.Value = nombre;
             descParam.Value = descripcion;
             precioParam.Value = precio;
@@ -113,6 +115,7 @@ namespace API_Tienda.Models
             descuentoParam.Value = descuento;
             paisParam.Value = pais;
 
+            comando.Parameters.Add(idProductoParam);
             comando.Parameters.Add(nombreParam);
             comando.Parameters.Add(descParam);
             comando.Parameters.Add(precioParam);
