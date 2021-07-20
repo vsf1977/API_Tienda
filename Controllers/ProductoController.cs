@@ -1,5 +1,6 @@
 ﻿using API_Tienda.Models;
 using Microsoft.AspNetCore.Mvc;
+using System;
 using System.Data.SqlClient;
 
 namespace API_Tienda.Controllers
@@ -10,9 +11,9 @@ namespace API_Tienda.Controllers
     //Clase para el manejo de productos.
     public class ProductoController : Controller
     {
-        [HttpGet("/api/v1/producto/search")]
 
         //Metodo para hacer consultas basadas en uno o varios parametros.
+        [HttpGet("/api/v1/producto/search")]
         public ActionResult Get(string? nombre, decimal? preciomax, decimal? preciomin, byte? descuento, string? pais)
         {
             //Dependiendo de que parametros este en la consulta, se va construyendo el query string.
@@ -22,13 +23,16 @@ namespace API_Tienda.Controllers
 
             if (preciomax.HasValue && preciomin.HasValue && preciomax >= preciomin)
                 query_string = query_string.Length > 0 ? query_string + " and precio <= @preciomax and precio >= @preciomin" : query_string + " precio <= @preciomax and precio >= @preciomin";
-            
+
             if (descuento.HasValue)
                 query_string = query_string.Length > 0 ? query_string + " and descuento = @descuento" : query_string + " descuento = @descuento";
-            
+
             if (!string.IsNullOrEmpty(pais))
                 query_string = query_string.Length > 0 ? query_string + " and UPPER(pais) like CONCAT('%', UPPER(@pais), '%')" : query_string + " UPPER(pais) like CONCAT('%', UPPER(@pais), '%')";
-                        
+
+            if ((preciomax.HasValue ^ preciomin.HasValue) && !(preciomax.HasValue && preciomin.HasValue)  || preciomin > preciomax)
+                return BadRequest("Parameter Error: The max price and the the min price must be valid and the max price must be greater than the min price");
+
             //Si el query string tiene algun parametro se hace la consulta
             if (query_string.Length > 0)
             {
@@ -49,9 +53,8 @@ namespace API_Tienda.Controllers
             }
         }
 
-        [HttpGet]
-
         //Metodo para traer todos los productos
+        [HttpGet]
         public ActionResult GetAll()
         {
             Producto producto = new Producto();
@@ -69,11 +72,11 @@ namespace API_Tienda.Controllers
             try
             {
                 //Se verifica el descuento dependiendo del pais
-                if (producto.pais.ToUpper() == "COLOMBIA" || producto.pais.ToUpper() == "MEXICO" && producto.descuento > 50)
+                if ((producto.pais.ToUpper() == "COLOMBIA" && producto.descuento > 50) || (producto.pais.ToUpper() == "MEXICO" && producto.descuento > 50))
                 {
                     return BadRequest("The discount musn´t be greater than 50%");
                 }
-                else if (producto.pais.ToUpper() == "CHILE" || producto.pais.ToUpper() == "PERU" && producto.descuento > 30)
+                else if ((producto.pais.ToUpper() == "CHILE" && producto.descuento > 30) || (producto.pais.ToUpper() == "PERU" && producto.descuento > 30))
                 {
                     return BadRequest("The discount musn´t be greater than 30%");
                 }
