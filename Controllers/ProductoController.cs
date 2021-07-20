@@ -74,11 +74,11 @@ namespace API_Tienda.Controllers
                 //Se verifica el descuento dependiendo del pais
                 if ((producto.pais.ToUpper() == "COLOMBIA" && producto.descuento > 50) || (producto.pais.ToUpper() == "MEXICO" && producto.descuento > 50))
                 {
-                    return BadRequest("The discount musn´t be greater than 50%");
+                    return BadRequest("The discount musn´t be greater than 50% in colombia and mexico");
                 }
                 else if ((producto.pais.ToUpper() == "CHILE" && producto.descuento > 30) || (producto.pais.ToUpper() == "PERU" && producto.descuento > 30))
                 {
-                    return BadRequest("The discount musn´t be greater than 30%");
+                    return BadRequest("The discount musn´t be greater than 30% in chile and peru");
                 }
                 else
                 {
