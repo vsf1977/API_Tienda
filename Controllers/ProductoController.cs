@@ -34,12 +34,12 @@ namespace API_Tienda.Controllers
                 }
                 catch (SqlException ex)
                 {
-                    return BadRequest(error: ex.ErrorCode);
+                    return StatusCode(500, $"Internal server error: {ex.Message}");
                 }
             }
             else
             {
-                return BadRequest();
+                return BadRequest("Parameter Error");
             }
         }
 
@@ -59,15 +59,25 @@ namespace API_Tienda.Controllers
             Producto producto = data;
             try
             {
-                producto.insertar();
-                return Ok();
+                if (producto.pais.ToUpper() == "COLOMBIA" || producto.pais.ToUpper() == "MEXICO" && producto.descuento > 50)
+                {
+                    return BadRequest("The discount musn´t be greater than 50%");
+                }
+                else if (producto.pais.ToUpper() == "CHILE" || producto.pais.ToUpper() == "PERU" && producto.descuento > 30)
+                {
+                    return BadRequest("The discount musn´t be greater than 30%");
+                }
+                else
+                {
+                    producto.insertar();
+                    return Created("api/v1/producto", data);
+                }
             }
             catch (SqlException ex)
             {
-                return BadRequest(error: ex.Number);
+                return StatusCode(500, $"Internal server error: {ex.Message}");
             }
         }
-
 
     }
 }

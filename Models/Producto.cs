@@ -1,6 +1,7 @@
 ﻿using API_Tienda.DataAccess;
 using System.Collections.Generic;
 using System.Data.SqlClient;
+using System.IO;
 
 namespace API_Tienda.Models
 {
@@ -15,25 +16,40 @@ namespace API_Tienda.Models
         public decimal precio { get; set; }
         public byte descuento { get; set; }
         public string pais { get; set; }
-
+        public Imagen[] imagenes { get; set; }
         public List<Producto> GetAll()
         {
             comando = new SqlCommand("select * from producto", database.Conectar());
             cursor = comando.ExecuteReader();
             List<Producto> productos = new List<Producto>();
-            if (cursor.HasRows)
+            string folderName = Path.Combine("Assets", "Images");
+            while (cursor.Read())
             {
-                while (cursor.Read())
+                Producto producto = new Producto();
+                producto.idProducto = cursor.GetString(0);
+                producto.nombre = cursor.GetString(1);
+                producto.descripcion = cursor.GetString(2);
+                producto.precio = cursor.GetDecimal(3);
+                producto.descuento = cursor.GetByte(4);
+                producto.pais = cursor.GetString(5);
+                string imagePath = Path.Combine(Directory.GetCurrentDirectory(), folderName, producto.idProducto);
+                if (Directory.Exists(imagePath))
                 {
-                    Producto producto = new Producto();
-                    producto.idProducto = cursor.GetString(0);
-                    producto.nombre = cursor.GetString(1);
-                    producto.descripcion = cursor.GetString(2);
-                    producto.precio = cursor.GetDecimal(3);
-                    producto.descuento = cursor.GetByte(4);
-                    producto.pais = cursor.GetString(5);
-                    productos.Add(producto);
+                    if (Directory.GetFiles(imagePath).Length > 0)
+                    {
+                        int i = 0;
+                        producto.imagenes = new Imagen[Directory.GetFiles(imagePath).Length];
+                        foreach (var file in Directory.GetFiles(imagePath))
+                        {
+                            Imagen imagen = new Imagen();
+                            imagen.nombre = file;
+                            producto.imagenes[i] = imagen;
+                            i++;
+                        }
+                    }
+                        
                 }
+                productos.Add(producto);
             }
             database.Desconectar();
             return productos;
@@ -78,6 +94,7 @@ namespace API_Tienda.Models
             List<Producto> productos = new List<Producto>();
             if (cursor.HasRows)
             {
+                string folderName = Path.Combine("Assets", "Images");
                 while (cursor.Read())
                 {
                     Producto producto = new Producto();
@@ -87,6 +104,23 @@ namespace API_Tienda.Models
                     producto.precio = cursor.GetDecimal(3);
                     producto.descuento = cursor.GetByte(4);
                     producto.pais = cursor.GetString(5);
+                    string imagePath = Path.Combine(Directory.GetCurrentDirectory(), folderName, producto.idProducto.ToString());
+                    if (Directory.Exists(imagePath))
+                    {
+                        if (Directory.GetFiles(imagePath).Length > 0)
+                        {
+                            int i = 0;
+                            producto.imagenes = new Imagen[Directory.GetFiles(imagePath).Length];
+                            foreach (var file in Directory.GetFiles(imagePath))
+                            {
+                                Imagen imagen = new Imagen();
+                                imagen.nombre = file;
+                                producto.imagenes[i] = imagen;
+                                i++;
+                            }
+                        }
+
+                    }
                     productos.Add(producto);
                 }
             }
