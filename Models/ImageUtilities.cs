@@ -8,8 +8,10 @@ using System.Drawing.Imaging;
 
 namespace API_Tienda.Models
 {
+    //Clase con utilidades para el manejo de archivos.
     public class ImageUtilities
     {
+        //Metodo para validar una imagen.
         public bool IsValidImage(string filename)
         {
             using (FileStream fs = File.OpenRead(filename))
@@ -25,41 +27,15 @@ namespace API_Tienda.Models
                     new byte[] { 77, 77, 42 },          // TIFF
                     new byte[] { 255, 216, 255, 224 },  // jpeg
                     new byte[] { 255, 216, 255, 225 }   // jpeg Canon
-            })
-                {
-                    if (pattern.SequenceEqual(header.Take(pattern.Length)))
-                        return true;
-                }
+                })
+                if (pattern.SequenceEqual(header.Take(pattern.Length)))
+                    return true;
             }
-
             return false;
         }
 
-        public static Image ResizeImage(Image image, int width, int height)
-        {
-            var destRect = new Rectangle(0, 0, width, height);
-            var destImage = new Bitmap(width, height);
-
-            destImage.SetResolution(image.HorizontalResolution, image.VerticalResolution);
-
-            using (var graphics = Graphics.FromImage(destImage))
-            {
-                graphics.CompositingMode = CompositingMode.SourceCopy;
-                graphics.CompositingQuality = CompositingQuality.Default;
-                graphics.InterpolationMode = InterpolationMode.Default;
-                graphics.SmoothingMode = SmoothingMode.Default;
-                graphics.PixelOffsetMode = PixelOffsetMode.Default;
-
-                using (var wrapMode = new ImageAttributes())
-                {
-                    wrapMode.SetWrapMode(WrapMode.TileFlipXY);
-                    graphics.DrawImage(image, destRect, 0, 0, image.Width, image.Height, GraphicsUnit.Pixel, wrapMode);
-                }
-            }
-            return (Image)destImage;
-        }
-
-        public void resize(string imagename, string path, float size)
+        //Metodo para redimensionar una imagen
+        public void ResizeImage(string imagename, string path, float size)
         {
             Image old_image = Image.FromFile(Path.Combine(path, imagename));
             float factor = (float)Math.Sqrt(size / 1048576);

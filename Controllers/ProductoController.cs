@@ -6,11 +6,16 @@ namespace API_Tienda.Controllers
 {
     [ApiController]
     [Route("api/v1/[controller]")]
+
+    //Clase para el manejo de productos.
     public class ProductoController : Controller
     {
         [HttpGet("/api/v1/producto/search")]
+
+        //Metodo para hacer consultas basadas en uno o varios parametros.
         public ActionResult Get(string? nombre, decimal? preciomax, decimal? preciomin, byte? descuento, string? pais)
         {
+            //Dependiendo de que parametros este en la consulta, se va construyendo el query string.
             string query_string = "";
             if (!string.IsNullOrEmpty(nombre))
                 query_string = query_string + " UPPER(nombre) like CONCAT('%', UPPER(@nombre), '%')";
@@ -24,6 +29,7 @@ namespace API_Tienda.Controllers
             if (!string.IsNullOrEmpty(pais))
                 query_string = query_string.Length > 0 ? query_string + " and UPPER(pais) like CONCAT('%', UPPER(@pais), '%')" : query_string + " UPPER(pais) like CONCAT('%', UPPER(@pais), '%')";
                         
+            //Si el query string tiene algun parametro se hace la consulta
             if (query_string.Length > 0)
             {
                 query_string = "select * from producto where" + query_string;
@@ -44,6 +50,8 @@ namespace API_Tienda.Controllers
         }
 
         [HttpGet]
+
+        //Metodo para traer todos los productos
         public ActionResult GetAll()
         {
             Producto producto = new Producto();
@@ -53,12 +61,14 @@ namespace API_Tienda.Controllers
                 return NotFound();
         }
 
+        //Metodo para guardar un producto nuevo
         [HttpPost("/api/v1/producto")]
         public ActionResult Post([FromForm] Producto data)
         {
             Producto producto = data;
             try
             {
+                //Se verifica el descuento dependiendo del pais
                 if (producto.pais.ToUpper() == "COLOMBIA" || producto.pais.ToUpper() == "MEXICO" && producto.descuento > 50)
                 {
                     return BadRequest("The discount musn´t be greater than 50%");

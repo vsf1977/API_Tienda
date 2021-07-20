@@ -5,6 +5,7 @@ using System.IO;
 
 namespace API_Tienda.Models
 {
+    //Clase para gestionar el manejo de la data de los productos
     public class Producto
     {
         SqlCommand comando;
@@ -17,6 +18,8 @@ namespace API_Tienda.Models
         public byte descuento { get; set; }
         public string pais { get; set; }
         public Imagen[] imagenes { get; set; }
+
+        //Metodo para listar todos los productos
         public List<Producto> GetAll()
         {
             comando = new SqlCommand("select * from producto", database.Conectar());
@@ -33,6 +36,7 @@ namespace API_Tienda.Models
                 producto.descuento = cursor.GetByte(4);
                 producto.pais = cursor.GetString(5);
                 string imagePath = Path.Combine(Directory.GetCurrentDirectory(), folderName, producto.idProducto);
+                //Se revisa si existe la carpeta con el nombre del id del producto para cargar las imagenes en cada´producto
                 if (Directory.Exists(imagePath))
                 {
                     if (Directory.GetFiles(imagePath).Length > 0)
@@ -55,8 +59,10 @@ namespace API_Tienda.Models
             return productos;
         }
 
+        //Metodo para gestionar las consultas de uno o varios parametros con la base de datos.
         public List<Producto> list(string? nombre, decimal? preciomax, decimal? preciomin, byte? descuento, string? pais, string query_string)
         {
+            //Se crea parametros para evitar el sql injection, dependiendo de los parametros pasados en el request
             comando = new SqlCommand(query_string, database.Conectar());
             if (query_string.IndexOf("nombre") >= 0)
             {
@@ -105,6 +111,7 @@ namespace API_Tienda.Models
                     producto.descuento = cursor.GetByte(4);
                     producto.pais = cursor.GetString(5);
                     string imagePath = Path.Combine(Directory.GetCurrentDirectory(), folderName, producto.idProducto.ToString());
+                    //Se revisa si existe la carpeta con el nombre del id del producto para cargar las imagenes en cada´producto
                     if (Directory.Exists(imagePath))
                     {
                         if (Directory.GetFiles(imagePath).Length > 0)
@@ -128,6 +135,7 @@ namespace API_Tienda.Models
             return productos;
         }
 
+        //Metodo para gestionar la insercion de un producto en la base de datos
         public void insertar()
         {
             comando = new SqlCommand(null, database.Conectar());
